@@ -145,6 +145,7 @@ MAILERS = {
     },
 }
 
+AUTH_USER_MODEL = "auth_app.CoderrUser"
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
