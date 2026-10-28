@@ -5,7 +5,7 @@ from auth_app.models import CoderrUser
 
 class RegistrationSerializer(serializers.ModelSerializer):
     """
-    Validates registration data and creates a user with its profile.
+    Validates registration data and creates a user.
     """
 
     repeated_password = serializers.CharField(write_only=True)
@@ -27,23 +27,28 @@ class RegistrationSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Email already exists")
         return value
 
-    def save(self):
+    def validate(self, data):
         """
-        Checks that both passwords match, creates the user with the email as username
-        and creates the matching UserProfile.
+        Checks that both passwords match
         """
-        pw = self.validated_data["password"]
-        repeated_pw = self.validated_data["repeated_password"]
+        pw = data["password"]
+        repeated_pw = data["repeated_password"]
 
         if pw != repeated_pw:
             raise serializers.ValidationError({"error": "Passwords dont match. Please try again!"})
+        return data
+
+    def save(self):
+        """
+        Saves the validated user
+        """
 
         account = CoderrUser(
             email=self.validated_data["email"],
             username=self.validated_data["username"],
             type=self.validated_data["type"],
         )
-        account.set_password(pw)
+        account.set_password(self.validated_data["password"])
         account.save()
 
         return account
