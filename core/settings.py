@@ -46,8 +46,11 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework.authtoken",
     "corsheaders",
-    "coderr_app.apps.CoderrAppConfig",
     "auth_app.apps.AuthAppConfig",
+    "offers_app.apps.OffersAppConfig",
+    "orders_app.apps.OrdersAppConfig",
+    "reviews_app.apps.ReviewsAppConfig",
+    "base_app.apps.BaseAppConfig",
 ]
 
 MIDDLEWARE = [
