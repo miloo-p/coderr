@@ -1,4 +1,5 @@
 from rest_framework import status
+from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 
 from .models import CoderrUser
@@ -60,3 +61,38 @@ class CoderrUserRegistrationTests(APITestCase):
         )
         response = self.client.post("/api/registration/", self.data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+class CoderrUserLoginTests(APITestCase):
+    def setUp(self):
+
+        self.user = CoderrUser.objects.create_user(
+            username="TestUser",
+            email="example@mail.de",
+            password="test123",
+            type="customer",
+        )
+
+        self.data = {"username": "TestUser", "password": "test123"}
+
+    def test_login_with_valid_data(self):
+        response = self.client.post("/api/login/", self.data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_login_datacheck(self):
+        response = self.client.post("/api/login/", self.data, format="json")
+        self.assertEqual(set(response.data.keys()), {"token", "username", "email", "user_id"})
+
+    def test_post_login_datacheck_with_wrong_password(self):
+        data = {
+            "username": "TestUser",
+            "password": "WRONGPASSWORD",
+        }
+        response = self.client.post("/api/login/", data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_post_login_tokencheck(self):
+        response = self.client.post("/api/login/", self.data, format="json")
+        token = Token.objects.get(user=self.user)
+
+        self.assertEqual(response.data["token"], token.key)
