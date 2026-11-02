@@ -101,7 +101,9 @@ class CoderrUserLoginTests(APITestCase):
 
 class ProfileTests(APITestCase):
     def setUp(self):
-        self.user = CoderrUser.objects.create_user(username="TestUser-1", password="test123")
+        self.user = CoderrUser.objects.create_user(
+            username="TestUser-1", password="test123", type="customer"
+        )
         self.client.force_authenticate(user=self.user)
         self.member = CoderrUser.objects.create_user(
             username="TestUser-2", password="test123", email="test@mail.de", type="business"
@@ -173,6 +175,15 @@ class ProfileTests(APITestCase):
         data = {"location": "Teststadt"}
         response = self.client.patch(url, data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        self.user.refresh_from_db()
+        self.member.refresh_from_db()
 
         self.assertEqual(self.member.location, "")
+
+    def test_patch_profile_change_type(self):
+        url = reverse("profile-detail", kwargs={"pk": self.user.id})
+        data = {"type": "business"}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.user.refresh_from_db()
+
+        self.assertEqual(self.user.type, "customer")

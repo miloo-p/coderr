@@ -63,6 +63,11 @@ class ProfileSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = CoderrUser
+        read_only_fields = [
+            "username",
+            "type",
+            "created_at",
+        ]
         fields = [
             "user",
             "username",
