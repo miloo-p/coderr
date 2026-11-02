@@ -52,3 +52,28 @@ class RegistrationSerializer(serializers.ModelSerializer):
         account.save()
 
         return account
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    """
+    Serializes the public profile data of a user.
+    """
+
+    user = serializers.IntegerField(read_only=True, source="id")
+
+    class Meta:
+        model = CoderrUser
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "location",
+            "tel",
+            "description",
+            "working_hours",
+            "type",
+            "email",
+            "created_at",
+        ]

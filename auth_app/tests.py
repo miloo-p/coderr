@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
@@ -96,3 +97,64 @@ class CoderrUserLoginTests(APITestCase):
         token = Token.objects.get(user=self.user)
 
         self.assertEqual(response.data["token"], token.key)
+
+
+class ProfileTests(APITestCase):
+    def setUp(self):
+        self.user = CoderrUser.objects.create_user(username="TestUser-1", password="test123")
+        self.client.force_authenticate(user=self.user)
+        self.member = CoderrUser.objects.create_user(
+            username="TestUser-2", password="test123", email="test@mail.de", type="business"
+        )
+
+    def test_get_profile(self):
+        url = reverse("profile-detail", kwargs={"pk": self.user.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_profile_of_another_member(self):
+        url = reverse("profile-detail", kwargs={"pk": self.member.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_profile_returns_all_fields(self):
+        url = reverse("profile-detail", kwargs={"pk": self.member.id})
+        response = self.client.get(url)
+        self.assertEqual(
+            set(response.data.keys()),
+            {
+                "user",
+                "username",
+                "first_name",
+                "last_name",
+                "file",
+                "location",
+                "tel",
+                "description",
+                "working_hours",
+                "type",
+                "email",
+                "created_at",
+            },
+        )
+
+    def test_get_profile_can_be_empty(self):
+        url = reverse("profile-detail", kwargs={"pk": self.user.id})
+        response = self.client.get(url)
+        self.assertEqual(response.data["location"], "")
+        self.assertEqual(response.data["tel"], "")
+        self.assertEqual(response.data["description"], "")
+        self.assertEqual(response.data["working_hours"], "")
+        self.assertEqual(response.data["first_name"], "")
+        self.assertEqual(response.data["last_name"], "")
+
+    def test_get_profile_of_unknown_id(self):
+        url = reverse("profile-detail", kwargs={"pk": "999999999"})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
+
+    def test_get_profile_while_not_authenticated(self):
+        self.client.force_authenticate(user=None)
+        url = reverse("profile-detail", kwargs={"pk": self.member.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)

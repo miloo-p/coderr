@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
@@ -5,7 +6,8 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .serializers import RegistrationSerializer
+from ..models import CoderrUser
+from .serializers import ProfileSerializer, RegistrationSerializer
 
 
 class RegistrationView(APIView):
@@ -64,3 +66,14 @@ class CustomLoginView(ObtainAuthToken):
         else:
             data = serializer.errors
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
+
+class ProfileDetailView(APIView):
+    def get(self, request, pk):
+        """
+        Returns a single Profile.
+        """
+        user = get_object_or_404(CoderrUser, pk=pk)
+        self.check_object_permissions(request, user)
+        serializer = ProfileSerializer(user)
+        return Response(serializer.data)
