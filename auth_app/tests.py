@@ -187,3 +187,27 @@ class ProfileTests(APITestCase):
         self.user.refresh_from_db()
 
         self.assertEqual(self.user.type, "customer")
+
+
+class ProfilesListTests(APITestCase):
+    def setUp(self):
+        self.user = CoderrUser.objects.create_user(
+            username="TestUser-1", password="test123", type="customer"
+        )
+        self.client.force_authenticate(user=self.user)
+        self.memberOne = CoderrUser.objects.create_user(
+            username="TestUser-2", password="test123", email="test@mail.de", type="business"
+        )
+        self.memberTwo = CoderrUser.objects.create_user(
+            username="TestUser-3", password="test123", email="test@mail.de", type="business"
+        )
+
+    def test_get_profilesList_customer(self):
+        url = reverse("customer-profiles-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_get_profilesList_business(self):
+        url = reverse("business-profiles-list")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)

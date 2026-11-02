@@ -8,7 +8,12 @@ from rest_framework.views import APIView
 
 from ..models import CoderrUser
 from .permissions import IsOwnerOfProfile
-from .serializers import ProfileSerializer, RegistrationSerializer
+from .serializers import (
+    BusinessProfileSerializer,
+    CustomerProfileSerializer,
+    ProfileSerializer,
+    RegistrationSerializer,
+)
 
 
 class RegistrationView(APIView):
@@ -91,3 +96,25 @@ class ProfileDetailView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save()
         return Response(serializer.data)
+
+
+class ProfilesListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Returns a list of profiles.
+        """
+        profiles = CoderrUser.objects.filter(type=self.profile_type)
+        serializer = self.serializer_class(profiles, many=True)
+        return Response(serializer.data)
+
+
+class BusinessProfilesListView(ProfilesListView):
+    profile_type = "business"
+    serializer_class = BusinessProfileSerializer
+
+
+class CustomerProfilesListView(ProfilesListView):
+    profile_type = "customer"
+    serializer_class = CustomerProfileSerializer

@@ -82,3 +82,26 @@ class ProfileSerializer(serializers.ModelSerializer):
             "email",
             "created_at",
         ]
+
+
+class BusinessProfileSerializer(ProfileSerializer):
+    class Meta(ProfileSerializer.Meta):
+        fields = [
+            "user",
+            "username",
+            "first_name",
+            "last_name",
+            "file",
+            "location",
+            "tel",
+            "description",
+            "working_hours",
+            "type",
+        ]
+
+
+class CustomerProfileSerializer(ProfileSerializer):
+    uploaded_at = serializers.DateTimeField(read_only=True, source="created_at")
+
+    class Meta(ProfileSerializer.Meta):
+        fields = ["user", "username", "first_name", "last_name", "file", "uploaded_at", "type"]
