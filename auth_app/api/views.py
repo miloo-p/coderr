@@ -2,11 +2,12 @@ from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from ..models import CoderrUser
+from .permissions import IsOwnerOfProfile
 from .serializers import ProfileSerializer, RegistrationSerializer
 
 
@@ -69,6 +70,8 @@ class CustomLoginView(ObtainAuthToken):
 
 
 class ProfileDetailView(APIView):
+    permission_classes = [IsAuthenticated, IsOwnerOfProfile]
+
     def get(self, request, pk):
         """
         Returns a single Profile.
@@ -76,4 +79,15 @@ class ProfileDetailView(APIView):
         user = get_object_or_404(CoderrUser, pk=pk)
         self.check_object_permissions(request, user)
         serializer = ProfileSerializer(user)
+        return Response(serializer.data)
+
+    def patch(self, request, pk):
+        """
+        Updates profile owner profile values (partial allowed).
+        """
+        user = get_object_or_404(CoderrUser, pk=pk)
+        self.check_object_permissions(request, user)
+        serializer = ProfileSerializer(user, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)

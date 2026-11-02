@@ -158,3 +158,21 @@ class ProfileTests(APITestCase):
         url = reverse("profile-detail", kwargs={"pk": self.member.id})
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_patch_profile_info_valid(self):
+        url = reverse("profile-detail", kwargs={"pk": self.user.id})
+        data = {"location": "Teststadt"}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["location"], "Teststadt")
+        self.user.refresh_from_db()
+        self.assertEqual(self.user.location, "Teststadt")
+
+    def test_patch_profile_info_invalid(self):
+        url = reverse("profile-detail", kwargs={"pk": self.member.id})
+        data = {"location": "Teststadt"}
+        response = self.client.patch(url, data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.user.refresh_from_db()
+
+        self.assertEqual(self.member.location, "")
