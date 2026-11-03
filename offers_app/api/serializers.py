@@ -45,3 +45,11 @@ class OfferSerializer(serializers.ModelSerializer):
             OfferDetail.objects.create(offer=offer, **detail)
 
         return offer
+
+    def validate_details(self, value):
+        offer_types = {detail["offer_type"] for detail in value}
+        if len(value) != 3 or offer_types != {"basic", "standard", "premium"}:
+            raise serializers.ValidationError(
+                "An offer needs details for all types: Basic, Standard and Premium."
+            )
+        return value
