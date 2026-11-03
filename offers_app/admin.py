@@ -4,10 +4,10 @@ from .models import Offer, OfferDetail
 
 
 @admin.register(Offer)
-class BoardAdmin(admin.ModelAdmin):
+class OfferAdmin(admin.ModelAdmin):
     pass
 
 
 @admin.register(OfferDetail)
-class TaskAdmin(admin.ModelAdmin):
+class OfferDetailAdmin(admin.ModelAdmin):
     pass
