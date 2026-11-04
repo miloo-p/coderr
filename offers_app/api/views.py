@@ -1,7 +1,6 @@
 from django.db.models import Min
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -22,7 +21,7 @@ class OfferView(APIView):
     View for a new Offer.
     """
 
-    permission_classes = [IsAuthenticated, IsBusinessTypeProfile]
+    permission_classes = [IsBusinessTypeProfile]
 
     def post(self, request):
         """
@@ -33,6 +32,14 @@ class OfferView(APIView):
             serializer.save(user=request.user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def get(self, request):
+        """
+        Returns a list of all offers.
+        """
+        offers = get_offers_with_min_values()
+        serializer = OfferRetrieveSerializer(offers, many=True, context={"request": request})
+        return Response(serializer.data)
 
 
 class OfferRetrieveView(APIView):

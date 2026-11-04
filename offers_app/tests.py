@@ -148,3 +148,14 @@ class OfferTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["price"], 100)
         self.assertEqual(response.data["offer_type"], "basic")
+
+    def test_get_offers_while_not_authenticated(self):
+        self.client.force_authenticate(user=None)
+        url = reverse("offers")
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+    def test_post_offer_while_not_authenticated(self):
+        self.client.force_authenticate(user=None)
+        response = self.client.post("/api/offers/", self.data, format="json")
+        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
