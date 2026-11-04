@@ -11,6 +11,12 @@ from .permissions import IsBusinessTypeProfile
 from .serializers import OfferDetailSerializer, OfferRetrieveSerializer, OfferSerializer
 
 
+def get_offers_with_min_values():
+    return Offer.objects.annotate(
+        min_price=Min("details__price"), min_delivery_time=Min("details__delivery_time_in_days")
+    )
+
+
 class OfferView(APIView):
     """
     View for a new Offer.
@@ -34,9 +40,7 @@ class OfferRetrieveView(APIView):
         """
         Returns a single offer.
         """
-        queryset = Offer.objects.annotate(
-            min_price=Min("details__price"), min_delivery_time=Min("details__delivery_time_in_days")
-        )
+        queryset = get_offers_with_min_values()
         offer = get_object_or_404(queryset, pk=pk)
         serializer = OfferRetrieveSerializer(offer, context={"request": request})
         return Response(serializer.data)
