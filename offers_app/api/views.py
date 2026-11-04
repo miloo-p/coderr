@@ -5,10 +5,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from offers_app.models import Offer
+from offers_app.models import Offer, OfferDetail
 
 from .permissions import IsBusinessTypeProfile
-from .serializers import OfferRetrieveSerializer, OfferSerializer
+from .serializers import OfferDetailSerializer, OfferRetrieveSerializer, OfferSerializer
 
 
 class OfferView(APIView):
@@ -29,7 +29,7 @@ class OfferView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class OfferDetailView(APIView):
+class OfferRetrieveView(APIView):
     def get(self, request, pk):
         """
         Returns a single offer.
@@ -39,4 +39,14 @@ class OfferDetailView(APIView):
         )
         offer = get_object_or_404(queryset, pk=pk)
         serializer = OfferRetrieveSerializer(offer)
+        return Response(serializer.data)
+
+
+class OfferDetailRetrieveView(APIView):
+    def get(self, request, pk):
+        """
+        Returns infos for a single OfferDetail.
+        """
+        offer_detail = get_object_or_404(OfferDetail, pk=pk)
+        serializer = OfferDetailSerializer(offer_detail)
         return Response(serializer.data)
