@@ -49,6 +49,9 @@ class OfferView(APIView):
         Returns a list of all offers.
         """
         offers = get_offers_with_min_values()
+        creator_id = request.query_params.get("creator_id")
+        if creator_id:
+            offers = offers.filter(user_id=creator_id)
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})
