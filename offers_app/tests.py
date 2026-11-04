@@ -159,3 +159,9 @@ class OfferTests(APITestCase):
         self.client.force_authenticate(user=None)
         response = self.client.post("/api/offers/", self.data, format="json")
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+
+    def test_get_list_of_offers(self):
+        self.client.force_authenticate(user=self.user)
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/")
+        self.assertEqual(response.data[0]["user_details"]["username"], self.user.username)

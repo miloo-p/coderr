@@ -7,7 +7,12 @@ from rest_framework.views import APIView
 from offers_app.models import Offer, OfferDetail
 
 from .permissions import IsBusinessTypeProfile
-from .serializers import OfferDetailSerializer, OfferRetrieveSerializer, OfferSerializer
+from .serializers import (
+    OfferDetailSerializer,
+    OfferListSerializer,
+    OfferRetrieveSerializer,
+    OfferSerializer,
+)
 
 
 def get_offers_with_min_values():
@@ -38,7 +43,7 @@ class OfferView(APIView):
         Returns a list of all offers.
         """
         offers = get_offers_with_min_values()
-        serializer = OfferRetrieveSerializer(offers, many=True, context={"request": request})
+        serializer = OfferListSerializer(offers, many=True, context={"request": request})
         return Response(serializer.data)
 
 

@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from auth_app.models import CoderrUser
+
 from ..models import Offer, OfferDetail
 
 
@@ -33,6 +35,20 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "url",
+        ]
+
+
+class OfferUserDetailSerializer(serializers.ModelSerializer):
+    """
+    Serializes the user_details key of an offer.
+    """
+
+    class Meta:
+        model = CoderrUser
+        fields = [
+            "first_name",
+            "last_name",
+            "username",
         ]
 
 
@@ -93,3 +109,10 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
             "min_price",
             "min_delivery_time",
         ]
+
+
+class OfferListSerializer(OfferRetrieveSerializer):
+    user_details = OfferUserDetailSerializer(read_only=True, source="user")
+
+    class Meta(OfferRetrieveSerializer.Meta):
+        fields = OfferRetrieveSerializer.Meta.fields + ["user_details"]
