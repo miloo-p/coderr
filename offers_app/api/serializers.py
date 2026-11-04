@@ -21,6 +21,21 @@ class OfferDetailSerializer(serializers.ModelSerializer):
         ]
 
 
+class OfferDetailLinkSerializer(serializers.ModelSerializer):
+    """
+    Serializes the details key of an offer.
+    """
+
+    url = serializers.HyperlinkedIdentityField(view_name="offerdetail-infos")
+
+    class Meta:
+        model = OfferDetail
+        fields = [
+            "id",
+            "url",
+        ]
+
+
 class OfferSerializer(serializers.ModelSerializer):
     """
     Serializes the Offer with its three OfferDetails.
@@ -57,9 +72,10 @@ class OfferSerializer(serializers.ModelSerializer):
 
 class OfferRetrieveSerializer(serializers.ModelSerializer):
     """
-    Serializes the OfferDetails.
+    Serializes an offer.
     """
 
+    details = OfferDetailLinkSerializer(many=True, read_only=True)
     min_price = serializers.DecimalField(max_digits=10, decimal_places=2, read_only=True)
     min_delivery_time = serializers.IntegerField(read_only=True)
 
@@ -73,6 +89,7 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
             "description",
             "created_at",
             "updated_at",
+            "details",
             "min_price",
             "min_delivery_time",
         ]

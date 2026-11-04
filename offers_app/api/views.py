@@ -38,7 +38,7 @@ class OfferRetrieveView(APIView):
             min_price=Min("details__price"), min_delivery_time=Min("details__delivery_time_in_days")
         )
         offer = get_object_or_404(queryset, pk=pk)
-        serializer = OfferRetrieveSerializer(offer)
+        serializer = OfferRetrieveSerializer(offer, context={"request": request})
         return Response(serializer.data)
 
 

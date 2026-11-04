@@ -138,6 +138,8 @@ class OfferTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["min_price"], 100)
         self.assertEqual(response.data["min_delivery_time"], 5)
+        self.assertEqual(len(response.data["details"]), 3)
+        self.assertEqual(set(response.data["details"][0].keys()), {"id", "url"})
 
     def test_get_a_single_offer_details(self):
         created = self.client.post("/api/offers/", self.data, format="json")
