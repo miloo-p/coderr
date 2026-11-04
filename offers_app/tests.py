@@ -1,3 +1,4 @@
+from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 
@@ -129,3 +130,11 @@ class OfferTests(APITestCase):
         self.client.force_authenticate(user=self.customer)
         response = self.client.post("/api/offers/", self.data, format="json")
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_get_a_single_offer(self):
+        created = self.client.post("/api/offers/", self.data, format="json")
+        url = reverse("offer-detail", kwargs={"pk": created.data["id"]})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["min_price"], 100)
+        self.assertEqual(response.data["min_delivery_time"], 5)
