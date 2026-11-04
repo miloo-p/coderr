@@ -1,6 +1,7 @@
 from django.db.models import Min
 from django.shortcuts import get_object_or_404
 from rest_framework import status
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -13,6 +14,11 @@ from .serializers import (
     OfferRetrieveSerializer,
     OfferSerializer,
 )
+
+
+class OfferPagination(PageNumberPagination):
+    page_size = 6
+    page_size_query_param = "page_size"
 
 
 def get_offers_with_min_values():
@@ -43,8 +49,10 @@ class OfferView(APIView):
         Returns a list of all offers.
         """
         offers = get_offers_with_min_values()
-        serializer = OfferListSerializer(offers, many=True, context={"request": request})
-        return Response(serializer.data)
+        paginator = OfferPagination()
+        page = paginator.paginate_queryset(offers, request)
+        serializer = OfferListSerializer(page, many=True, context={"request": request})
+        return paginator.get_paginated_response(serializer.data)
 
 
 class OfferRetrieveView(APIView):

@@ -164,4 +164,14 @@ class OfferTests(APITestCase):
         self.client.force_authenticate(user=self.user)
         self.client.post("/api/offers/", self.data, format="json")
         response = self.client.get("/api/offers/")
-        self.assertEqual(response.data[0]["user_details"]["username"], self.user.username)
+        self.assertEqual(
+            response.data["results"][0]["user_details"]["username"], self.user.username
+        )
+
+    def test_get_list_of_offers_with_pagination(self):
+        self.client.force_authenticate(user=self.user)
+        self.client.post("/api/offers/", self.data, format="json")
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/?page_size=1")
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(len(response.data["results"]), 1)
