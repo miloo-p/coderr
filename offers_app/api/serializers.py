@@ -95,14 +95,6 @@ class OfferFilterSerializer(serializers.Serializer):
     max_delivery_time = serializers.IntegerField(required=False)
     min_price = serializers.FloatField(required=False)
 
-    class Meta:
-        model = Offer
-        fields = [
-            "creator_id",
-            "max_delivery_time",
-            "min_price",
-        ]
-
 
 class OfferRetrieveSerializer(serializers.ModelSerializer):
     """

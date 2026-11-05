@@ -1,4 +1,4 @@
-from django.db.models import Min
+from django.db.models import Min, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
@@ -61,9 +61,15 @@ class OfferView(APIView):
             min_price = request.query_params.get("min_price")
             if min_price:
                 offers = offers.filter(min_price__gte=min_price)
+            search = request.query_params.get("search")
+            if search:
+                offers = offers.filter(
+                    Q(title__icontains=search) | Q(description__icontains=search)
+                )
         else:
             data = serializer.errors
             return Response(data, status=status.HTTP_400_BAD_REQUEST)
+
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})

@@ -212,3 +212,14 @@ class OfferTests(APITestCase):
 
         response = self.client.get("/api/offers/?creator_id=abcdefg")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_offer_with_search_query(self):
+        self.client.post("/api/offers/", self.data, format="json")
+        self.data["title"] = "Logo Entwicklung"
+        self.client.post("/api/offers/", self.data, format="json")
+        self.data["title"] = "Entwicklung"
+        self.data["description"] = "Gestaltungspaket für ein Logo nach deinen Wünschen!"
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/?search=logo")
+        self.assertEqual(response.data["count"], 2)
+        self.assertEqual(response.data["results"][0]["min_price"], 100)
