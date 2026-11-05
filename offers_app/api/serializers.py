@@ -90,6 +90,11 @@ class OfferSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError(
                     "An offer needs details for all types: Basic, Standard and Premium."
                 )
+        else:
+            for detail in value:
+                if "offer_type" not in detail:
+                    raise serializers.ValidationError("Each detail needs an offer_type.")
+
         return value
 
 
