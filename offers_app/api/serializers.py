@@ -86,6 +86,24 @@ class OfferSerializer(serializers.ModelSerializer):
         return value
 
 
+class OfferFilterSerializer(serializers.Serializer):
+    """
+    Serializes the query-filter inputs.
+    """
+
+    creator_id = serializers.IntegerField(required=False)
+    max_delivery_time = serializers.IntegerField(required=False)
+    min_price = serializers.FloatField(required=False)
+
+    class Meta:
+        model = Offer
+        fields = [
+            "creator_id",
+            "max_delivery_time",
+            "min_price",
+        ]
+
+
 class OfferRetrieveSerializer(serializers.ModelSerializer):
     """
     Serializes an offer.

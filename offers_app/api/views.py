@@ -10,6 +10,7 @@ from offers_app.models import Offer, OfferDetail
 from .permissions import IsBusinessTypeProfile
 from .serializers import (
     OfferDetailSerializer,
+    OfferFilterSerializer,
     OfferListSerializer,
     OfferRetrieveSerializer,
     OfferSerializer,
@@ -49,15 +50,20 @@ class OfferView(APIView):
         Returns a list of all offers.
         """
         offers = get_offers_with_min_values()
-        creator_id = request.query_params.get("creator_id")
-        if creator_id:
-            offers = offers.filter(user_id=creator_id)
-        max_delivery_time = request.query_params.get("max_delivery_time")
-        if max_delivery_time:
-            offers = offers.filter(min_delivery_time__lte=max_delivery_time)
-        min_price = request.query_params.get("min_price")
-        if min_price:
-            offers = offers.filter(min_price__gte=min_price)
+        serializer = OfferFilterSerializer(data=request.query_params)
+        if serializer.is_valid():
+            creator_id = request.query_params.get("creator_id")
+            if creator_id:
+                offers = offers.filter(user_id=creator_id)
+            max_delivery_time = request.query_params.get("max_delivery_time")
+            if max_delivery_time:
+                offers = offers.filter(min_delivery_time__lte=max_delivery_time)
+            min_price = request.query_params.get("min_price")
+            if min_price:
+                offers = offers.filter(min_price__gte=min_price)
+        else:
+            data = serializer.errors
+            return Response(data, status=status.HTTP_400_BAD_REQUEST)
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})

@@ -206,3 +206,9 @@ class OfferTests(APITestCase):
         response = self.client.get("/api/offers/?min_price=600")
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(len(response.data["results"]), 1)
+
+    def test_get_offer_with_invalid_query(self):
+        self.client.post("/api/offers/", self.data, format="json")
+
+        response = self.client.get("/api/offers/?creator_id=abcdefg")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
