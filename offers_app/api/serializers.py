@@ -94,6 +94,9 @@ class OfferFilterSerializer(serializers.Serializer):
     creator_id = serializers.IntegerField(required=False)
     max_delivery_time = serializers.IntegerField(required=False)
     min_price = serializers.FloatField(required=False)
+    ordering = serializers.ChoiceField(
+        choices=["min_price", "-min_price", "updated_at", "-updated_at"], required=False
+    )
 
 
 class OfferRetrieveSerializer(serializers.ModelSerializer):

@@ -52,6 +52,9 @@ class OfferView(APIView):
         offers = get_offers_with_min_values()
         serializer = OfferFilterSerializer(data=request.query_params)
         if serializer.is_valid():
+            ordering = request.query_params.get("ordering")
+            if ordering:
+                offers = offers.order_by(ordering)
             creator_id = request.query_params.get("creator_id")
             if creator_id:
                 offers = offers.filter(user_id=creator_id)

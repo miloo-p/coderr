@@ -223,3 +223,27 @@ class OfferTests(APITestCase):
         response = self.client.get("/api/offers/?search=logo")
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(response.data["results"][0]["min_price"], 100)
+
+    def test_get_ordered_offer_by_price(self):
+        self.data["title"] = "Teures Gestaltungspaket"
+        for detail in self.data["details"]:
+            detail["price"] = 600
+        self.client.post("/api/offers/", self.data, format="json")
+        self.data["title"] = "Günstiges Gestaltungspaket"
+        for detail in self.data["details"]:
+            detail["price"] = 100
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/?ordering=min_price")
+        self.assertEqual(response.data["results"][0]["title"], "Günstiges Gestaltungspaket")
+
+    def test_get_ordered_offer_by_last_update(self):
+        self.client.post("/api/offers/", self.data, format="json")
+        self.data["title"] = "Neueres Gestaltungspaket"
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/?ordering=-updated_at")
+        self.assertEqual(response.data["results"][0]["title"], "Neueres Gestaltungspaket")
+
+    def test_get_ordered_offer_by_invalid_ordering(self):
+        self.client.post("/api/offers/", self.data, format="json")
+        response = self.client.get("/api/offers/?ordering=dingdong")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
