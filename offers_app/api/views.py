@@ -56,7 +56,7 @@ class OfferView(APIView):
             if ordering:
                 offers = offers.order_by(ordering)
             else:
-                offers = offers.order_by("updated_at")
+                offers = offers.order_by("-updated_at")
             creator_id = request.query_params.get("creator_id")
             if creator_id:
                 offers = offers.filter(user_id=creator_id)
