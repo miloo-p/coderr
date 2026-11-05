@@ -246,14 +246,14 @@ class OfferTests(APITestCase):
         response = self.client.get("/api/offers/?ordering=dingdong")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_delete_offer_by_with_permission(self):
+    def test_delete_offer_with_permission(self):
         response = self.client.post("/api/offers/", self.data, format="json")
         url = reverse("offer-detail", kwargs={"pk": response.data["id"]})
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Offer.objects.count(), 0)
 
-    def test_delete_offer_by_without_permission(self):
+    def test_delete_offer_without_permission(self):
         self.other_user = CoderrUser.objects.create_user(
             username="OtherUser",
             email="example@mail.de",
@@ -266,3 +266,19 @@ class OfferTests(APITestCase):
         response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
         self.assertEqual(Offer.objects.count(), 1)
+
+    def test_update_offer_with_permission(self):
+        response = self.client.post("/api/offers/", self.data, format="json")
+        url = reverse("offer-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.patch(url, {"title": "Neueres Gestaltungspaket"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["title"], "Neueres Gestaltungspaket")
+
+    def test_update_offer_with_permission_change_details(self):
+        response = self.client.post("/api/offers/", self.data, format="json")
+        url = reverse("offer-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.patch(
+            url, {"details": [{"offer_type": "basic", "title": "Neues Basic"}]}, format="json"
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["details"][0]["title"], "Neues Basic")

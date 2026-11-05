@@ -103,6 +103,17 @@ class OfferRetrieveView(APIView):
         offer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
+    def patch(self, request, pk):
+        """
+        Updates offer values (partial allowed).
+        """
+        offer = get_object_or_404(Offer, pk=pk)
+        self.check_object_permissions(request, offer)
+        serializer = OfferSerializer(offer, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
+
 
 class OfferDetailRetrieveView(APIView):
     def get(self, request, pk):

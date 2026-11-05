@@ -77,12 +77,19 @@ class OfferSerializer(serializers.ModelSerializer):
 
         return offer
 
+    def update(self, instance, validated_data):
+        details = validated_data.pop("details", [])
+        for detail in details:
+            instance.details.filter(offer_type=detail["offer_type"]).update(**detail)
+        return super().update(instance, validated_data)
+
     def validate_details(self, value):
-        offer_types = {detail["offer_type"] for detail in value}
-        if len(value) != 3 or offer_types != {"basic", "standard", "premium"}:
-            raise serializers.ValidationError(
-                "An offer needs details for all types: Basic, Standard and Premium."
-            )
+        if not self.partial:
+            offer_types = {detail["offer_type"] for detail in value}
+            if len(value) != 3 or offer_types != {"basic", "standard", "premium"}:
+                raise serializers.ValidationError(
+                    "An offer needs details for all types: Basic, Standard and Premium."
+                )
         return value
 
 
