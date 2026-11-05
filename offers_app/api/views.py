@@ -52,6 +52,9 @@ class OfferView(APIView):
         creator_id = request.query_params.get("creator_id")
         if creator_id:
             offers = offers.filter(user_id=creator_id)
+        max_delivery_time = request.query_params.get("max_delivery_time")
+        if max_delivery_time:
+            offers = offers.filter(min_delivery_time__lte=max_delivery_time)
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})

@@ -176,7 +176,7 @@ class OfferTests(APITestCase):
         self.assertEqual(response.data["count"], 2)
         self.assertEqual(len(response.data["results"]), 1)
 
-    def test_get_offer_from_creatorid(self):
+    def test_get_offer_filter_creator_id(self):
         self.client.post("/api/offers/", self.data, format="json")
         other_user = CoderrUser.objects.create_user(
             username="OtherUser", password="test123", type="business"
@@ -184,5 +184,15 @@ class OfferTests(APITestCase):
         self.client.force_authenticate(user=other_user)
         self.client.post("/api/offers/", self.data, format="json")
         response = self.client.get(f"/api/offers/?creator_id={self.user.id}")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(len(response.data["results"]), 1)
+
+    def test_get_offer_from_max_delivery(self):
+        self.client.post("/api/offers/", self.data, format="json")
+        for detail in self.data["details"]:
+            detail["delivery_time_in_days"] = 2
+        self.client.post("/api/offers/", self.data, format="json")
+
+        response = self.client.get("/api/offers/?max_delivery_time=3")
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(len(response.data["results"]), 1)
