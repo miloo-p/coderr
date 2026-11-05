@@ -125,6 +125,10 @@ class OfferRetrieveSerializer(serializers.ModelSerializer):
 
 
 class OfferListSerializer(OfferRetrieveSerializer):
+    """
+    Serializes an offer-list.
+    """
+
     user_details = OfferUserDetailSerializer(read_only=True, source="user")
 
     class Meta(OfferRetrieveSerializer.Meta):

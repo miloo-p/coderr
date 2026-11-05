@@ -1,7 +1,7 @@
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
-class IsBusinessTypeProfile(BasePermission):
+class IsBusinessOrReadOnly(BasePermission):
     """
     Allows access to business functions.
     """

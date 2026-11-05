@@ -7,7 +7,7 @@ from rest_framework.views import APIView
 
 from offers_app.models import Offer, OfferDetail
 
-from .permissions import IsBusinessTypeProfile
+from .permissions import IsBusinessOrReadOnly
 from .serializers import (
     OfferDetailSerializer,
     OfferFilterSerializer,
@@ -30,10 +30,10 @@ def get_offers_with_min_values():
 
 class OfferView(APIView):
     """
-    View for a new Offer.
+    View for a new offer or offer list.
     """
 
-    permission_classes = [IsBusinessTypeProfile]
+    permission_classes = [IsBusinessOrReadOnly]
 
     def post(self, request):
         """

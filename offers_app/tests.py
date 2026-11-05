@@ -78,7 +78,6 @@ class OfferTests(APITestCase):
             ],
         }
 
-        self.client.force_authenticate(user=self.user)
         response = self.client.post("/api/offers/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -116,7 +115,6 @@ class OfferTests(APITestCase):
             ],
         }
 
-        self.client.force_authenticate(user=self.user)
         response = self.client.post("/api/offers/", data, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -161,7 +159,6 @@ class OfferTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 
     def test_get_list_of_offers(self):
-        self.client.force_authenticate(user=self.user)
         self.client.post("/api/offers/", self.data, format="json")
         response = self.client.get("/api/offers/")
         self.assertEqual(
@@ -169,7 +166,6 @@ class OfferTests(APITestCase):
         )
 
     def test_get_list_of_offers_with_pagination(self):
-        self.client.force_authenticate(user=self.user)
         self.client.post("/api/offers/", self.data, format="json")
         self.client.post("/api/offers/", self.data, format="json")
         response = self.client.get("/api/offers/?page_size=1")
