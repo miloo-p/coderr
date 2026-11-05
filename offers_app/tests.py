@@ -4,6 +4,8 @@ from rest_framework.test import APITestCase
 
 from auth_app.models import CoderrUser
 
+from .models import Offer
+
 
 class OfferTests(APITestCase):
     def setUp(self):
@@ -243,3 +245,24 @@ class OfferTests(APITestCase):
         self.client.post("/api/offers/", self.data, format="json")
         response = self.client.get("/api/offers/?ordering=dingdong")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_offer_by_with_permission(self):
+        response = self.client.post("/api/offers/", self.data, format="json")
+        url = reverse("offer-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Offer.objects.count(), 0)
+
+    def test_delete_offer_by_without_permission(self):
+        self.other_user = CoderrUser.objects.create_user(
+            username="OtherUser",
+            email="example@mail.de",
+            password="test123",
+            type="business",
+        )
+        response = self.client.post("/api/offers/", self.data, format="json")
+        self.client.force_authenticate(user=self.other_user)
+        url = reverse("offer-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Offer.objects.count(), 1)

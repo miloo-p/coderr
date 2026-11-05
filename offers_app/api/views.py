@@ -2,12 +2,13 @@ from django.db.models import Min, Q
 from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from offers_app.models import Offer, OfferDetail
 
-from .permissions import IsBusinessOrReadOnly
+from .permissions import IsBusinessOrReadOnly, IsCreatorOfOffer
 from .serializers import (
     OfferDetailSerializer,
     OfferFilterSerializer,
@@ -82,6 +83,8 @@ class OfferView(APIView):
 
 
 class OfferRetrieveView(APIView):
+    permission_classes = [IsAuthenticated, IsCreatorOfOffer]
+
     def get(self, request, pk):
         """
         Returns a single offer.
@@ -90,6 +93,15 @@ class OfferRetrieveView(APIView):
         offer = get_object_or_404(queryset, pk=pk)
         serializer = OfferRetrieveSerializer(offer, context={"request": request})
         return Response(serializer.data)
+
+    def delete(self, request, pk):
+        """
+        Deletes a single offer.
+        """
+        offer = get_object_or_404(Offer, pk=pk)
+        self.check_object_permissions(request, offer)
+        offer.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 class OfferDetailRetrieveView(APIView):
