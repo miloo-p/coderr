@@ -187,12 +187,22 @@ class OfferTests(APITestCase):
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(len(response.data["results"]), 1)
 
-    def test_get_offer_from_max_delivery(self):
+    def test_get_offer_with_max_delivery_filter(self):
         self.client.post("/api/offers/", self.data, format="json")
         for detail in self.data["details"]:
             detail["delivery_time_in_days"] = 2
         self.client.post("/api/offers/", self.data, format="json")
 
         response = self.client.get("/api/offers/?max_delivery_time=3")
+        self.assertEqual(response.data["count"], 1)
+        self.assertEqual(len(response.data["results"]), 1)
+
+    def test_get_offer_with_min_price(self):
+        self.client.post("/api/offers/", self.data, format="json")
+        for detail in self.data["details"]:
+            detail["price"] = 600
+        self.client.post("/api/offers/", self.data, format="json")
+
+        response = self.client.get("/api/offers/?min_price=600")
         self.assertEqual(response.data["count"], 1)
         self.assertEqual(len(response.data["results"]), 1)

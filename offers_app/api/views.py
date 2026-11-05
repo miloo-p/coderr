@@ -55,6 +55,9 @@ class OfferView(APIView):
         max_delivery_time = request.query_params.get("max_delivery_time")
         if max_delivery_time:
             offers = offers.filter(min_delivery_time__lte=max_delivery_time)
+        min_price = request.query_params.get("min_price")
+        if min_price:
+            offers = offers.filter(min_price__gte=min_price)
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})
