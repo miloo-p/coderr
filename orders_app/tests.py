@@ -67,7 +67,7 @@ class OrderTests(APITestCase):
         self.assertEqual(response.data["price"], 100)
         self.assertEqual(response.data["business_user"], self.business_user.id)
 
-    def test_post_orders_by_an_business_user(self):
+    def test_post_orders_as_an_business_user(self):
         self.client.force_authenticate(user=self.business_user)
 
         url = reverse("orders")
@@ -78,3 +78,25 @@ class OrderTests(APITestCase):
         url = reverse("orders")
         response = self.client.post(url, {}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_get_orders_as_an_business_user(self):
+        url = reverse("orders")
+        self.client.post(url, {"offer_detail_id": self.offer_detail_id}, format="json")
+        self.client.force_authenticate(user=self.business_user)
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 1)
+
+    def test_get_orders_as_an_unrelated_user(self):
+        self.silent_user = CoderrUser.objects.create_user(
+            username="SilentBusiness",
+            email="example@mail.de",
+            password="test123",
+            type="business",
+        )
+        url = reverse("orders")
+        self.client.post(url, {"offer_detail_id": self.offer_detail_id}, format="json")
+        self.client.force_authenticate(user=self.silent_user)
+        response = self.client.get(url, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)
