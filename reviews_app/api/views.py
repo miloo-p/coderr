@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
@@ -6,7 +7,8 @@ from rest_framework.views import APIView
 from orders_app.api.permissions import IsCustomerOrReadOnly
 
 from ..models import Review
-from .serializers import ReviewFilterSerializer, ReviewSerializer
+from .permissions import IsReviewer
+from .serializers import ReviewFilterSerializer, ReviewSerializer, ReviewUpdateSerializer
 
 
 class ReviewView(APIView):
@@ -41,3 +43,31 @@ class ReviewView(APIView):
         serializer.is_valid(raise_exception=True)
         serializer.save(reviewer=request.user)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ReviewDetailView(APIView):
+    """
+    Lets the reviewer update or delete a single review.
+    """
+
+    permission_classes = [IsAuthenticated, IsReviewer]
+
+    def patch(self, request, pk):
+        """
+        Updates rating and/or description and returns the whole review.
+        """
+        review = get_object_or_404(Review, pk=pk)
+        self.check_object_permissions(request, review)
+        serializer = ReviewUpdateSerializer(review, data=request.data, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(ReviewSerializer(review).data)
+
+    def delete(self, request, pk):
+        """
+        Deletes a review.
+        """
+        review = get_object_or_404(Review, pk=pk)
+        self.check_object_permissions(request, review)
+        review.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

@@ -58,3 +58,44 @@ class ReviewTests(APITestCase):
         self.assertEqual(len(response.data), 1)
         response = self.client.get(self.url, {"ordering": "-rating"})
         self.assertEqual(response.data[0]["rating"], 5)
+
+    def create_review_and_url(self):
+        response = self.client.post(self.url, self.data, format="json")
+        return reverse("review-detail", kwargs={"pk": response.data["id"]})
+
+    def test_patch_review_as_reviewer(self):
+        url = self.create_review_and_url()
+        response = self.client.patch(url, {"rating": 5}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["rating"], 5)
+        self.assertEqual(response.data["description"], "Alles war toll!")
+
+    def test_patch_review_with_forbidden_field(self):
+        url = self.create_review_and_url()
+        response = self.client.patch(url, {"rating": 5, "business_user": 999}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_patch_review_as_other_customer(self):
+        url = self.create_review_and_url()
+        other_customer = CoderrUser.objects.create_user(
+            username="OtherCustomer", password="test123", type="customer"
+        )
+        self.client.force_authenticate(user=other_customer)
+        response = self.client.patch(url, {"rating": 1}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_delete_review_as_reviewer(self):
+        url = self.create_review_and_url()
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Review.objects.count(), 0)
+
+    def test_delete_review_as_other_customer(self):
+        url = self.create_review_and_url()
+        other_customer = CoderrUser.objects.create_user(
+            username="OtherCustomer", password="test123", type="customer"
+        )
+        self.client.force_authenticate(user=other_customer)
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Review.objects.count(), 1)

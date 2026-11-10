@@ -46,3 +46,21 @@ class ReviewFilterSerializer(serializers.Serializer):
     ordering = serializers.ChoiceField(
         choices=["updated_at", "-updated_at", "rating", "-rating"], required=False
     )
+
+
+class ReviewUpdateSerializer(serializers.ModelSerializer):
+    """
+    Serializes the editable fields of a review.
+    """
+
+    class Meta:
+        model = Review
+        fields = ["rating", "description"]
+
+    def validate(self, attrs):
+        extra_fields = set(self.initial_data) - {"rating", "description"}
+        if extra_fields:
+            raise serializers.ValidationError(
+                f"Only 'rating' and 'description' may be changed, not: {', '.join(extra_fields)}."
+            )
+        return attrs
