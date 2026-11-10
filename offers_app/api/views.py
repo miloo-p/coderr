@@ -29,6 +29,22 @@ def get_offers_with_min_values():
     )
 
 
+def filter_offers(offers, params):
+    """
+    Applies the validated query filters and the ordering to the offers.
+    """
+    if "creator_id" in params:
+        offers = offers.filter(user_id=params["creator_id"])
+    if "max_delivery_time" in params:
+        offers = offers.filter(min_delivery_time__lte=params["max_delivery_time"])
+    if "min_price" in params:
+        offers = offers.filter(min_price__gte=params["min_price"])
+    if "search" in params:
+        search = params["search"]
+        offers = offers.filter(Q(title__icontains=search) | Q(description__icontains=search))
+    return offers.order_by(params.get("ordering", "-updated_at"))
+
+
 class OfferView(APIView):
     """
     View for a new offer or offer list.
@@ -48,34 +64,11 @@ class OfferView(APIView):
 
     def get(self, request):
         """
-        Returns a list of all offers.
+        Returns the filtered, ordered and paginated list of offers.
         """
-        offers = get_offers_with_min_values()
-        serializer = OfferFilterSerializer(data=request.query_params)
-        if serializer.is_valid():
-            ordering = request.query_params.get("ordering")
-            if ordering:
-                offers = offers.order_by(ordering)
-            else:
-                offers = offers.order_by("-updated_at")
-            creator_id = request.query_params.get("creator_id")
-            if creator_id:
-                offers = offers.filter(user_id=creator_id)
-            max_delivery_time = request.query_params.get("max_delivery_time")
-            if max_delivery_time:
-                offers = offers.filter(min_delivery_time__lte=max_delivery_time)
-            min_price = request.query_params.get("min_price")
-            if min_price:
-                offers = offers.filter(min_price__gte=min_price)
-            search = request.query_params.get("search")
-            if search:
-                offers = offers.filter(
-                    Q(title__icontains=search) | Q(description__icontains=search)
-                )
-        else:
-            data = serializer.errors
-            return Response(data, status=status.HTTP_400_BAD_REQUEST)
-
+        filter_serializer = OfferFilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        offers = filter_offers(get_offers_with_min_values(), filter_serializer.validated_data)
         paginator = OfferPagination()
         page = paginator.paginate_queryset(offers, request)
         serializer = OfferListSerializer(page, many=True, context={"request": request})
