@@ -28,6 +28,11 @@ class Review(models.Model):
             ),
         ]
         ordering = ["-updated_at"]
+        verbose_name = "Review"
+        verbose_name_plural = "Reviews"
 
     def __str__(self):
+        """
+        Shows reviewer and rating, e.g. in the admin.
+        """
         return f"Review by {self.reviewer.username} (Rating: {self.rating})"

@@ -16,6 +16,17 @@ class Offer(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ["-updated_at"]
+        verbose_name = "Offer"
+        verbose_name_plural = "Offers"
+
+    def __str__(self):
+        """
+        Shows the title, e.g. in the admin.
+        """
+        return self.title
+
 
 class OfferDetail(models.Model):
     """
@@ -34,3 +45,14 @@ class OfferDetail(models.Model):
     price = models.DecimalField(max_digits=10, decimal_places=2)
     features = models.JSONField()
     offer_type = models.CharField(max_length=8, choices=OFFER_TYPE_CHOICES)
+
+    class Meta:
+        ordering = ["id"]
+        verbose_name = "Offer detail"
+        verbose_name_plural = "Offer details"
+
+    def __str__(self):
+        """
+        Shows offer title and package type, e.g. in the admin.
+        """
+        return f"{self.offer.title} ({self.offer_type})"
