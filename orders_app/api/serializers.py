@@ -59,3 +59,23 @@ class OrderSerializer(serializers.ModelSerializer):
             business_user=offer_detail.offer.user,
         )
         return order
+
+
+class OrderStatusSerializer(serializers.ModelSerializer):
+    """
+    Serializes a status change for an order.
+    """
+
+    class Meta:
+        model = Order
+        fields = [
+            "status",
+        ]
+
+    def validate(self, attrs):
+        extra_fields = set(self.initial_data) - {"status"}
+        if extra_fields:
+            raise serializers.ValidationError(
+                f"Only 'status' can be changed, not: {', '.join(extra_fields)}."
+            )
+        return attrs

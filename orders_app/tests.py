@@ -100,3 +100,34 @@ class OrderTests(APITestCase):
         response = self.client.get(url, format="json")
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(len(response.data), 0)
+
+    def test_patch_order_status_by_creator(self):
+        url = reverse("orders")
+        response = self.client.post(url, {"offer_detail_id": self.offer_detail_id}, format="json")
+        self.client.force_authenticate(user=self.business_user)
+        url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.patch(url, {"status": "completed"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["status"], "completed")
+
+    def test_patch_order_status_by_different_user(self):
+        self.different_user = CoderrUser.objects.create_user(
+            username="differentBusiness",
+            email="example@mail.de",
+            password="test123",
+            type="business",
+        )
+        url = reverse("orders")
+        response = self.client.post(url, {"offer_detail_id": self.offer_detail_id}, format="json")
+        self.client.force_authenticate(user=self.different_user)
+        url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.patch(url, {"status": "completed"}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_patch_order_with_invalid_data_by_creator(self):
+        url = reverse("orders")
+        response = self.client.post(url, {"offer_detail_id": self.offer_detail_id}, format="json")
+        self.client.force_authenticate(user=self.business_user)
+        url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.patch(url, {"status": "completed", "price": 1}, format="json")
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

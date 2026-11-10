@@ -10,3 +10,14 @@ class IsCustomerOrReadOnly(BasePermission):
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_authenticated and request.user.type == "customer"
+
+
+class IsCreatorOfOrder(BasePermission):
+    """
+    Business user of the order may update it, only staff may delete it.
+    """
+
+    def has_object_permission(self, request, view, obj):
+        if request.method == "DELETE":
+            return request.user.is_staff
+        return obj.business_user == request.user
