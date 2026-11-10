@@ -5,6 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from auth_app.models import CoderrUser
+
 from ..models import Order
 from .permissions import IsCreatorOfOrder, IsCustomerOrReadOnly
 from .serializers import OrderSerializer, OrderStatusSerializer
@@ -58,3 +60,38 @@ class OrderDetailView(APIView):
         self.check_object_permissions(request, order)
         order.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class BaseOrderCountView(APIView):
+    """
+    Counts the orders of a business user with a given status.
+    """
+
+    order_status = None
+    response_key = None
+
+    def get(self, request, business_user_id):
+        """
+        Returns the number of orders with this view's status.
+        """
+        business_user = get_object_or_404(CoderrUser, pk=business_user_id, type="business")
+        count = business_user.business_orders.filter(status=self.order_status).count()
+        return Response({self.response_key: count})
+
+
+class OrderCountView(BaseOrderCountView):
+    """
+    Returns the number of running orders of a business user.
+    """
+
+    order_status = "in_progress"
+    response_key = "order_count"
+
+
+class CompletedOrderCountView(BaseOrderCountView):
+    """
+    Returns the number of completed orders of a business user.
+    """
+
+    order_status = "completed"
+    response_key = "completed_order_count"

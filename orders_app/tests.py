@@ -3,6 +3,7 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 
 from auth_app.models import CoderrUser
+from orders_app.models import Order
 
 
 # Create your tests here.
@@ -131,3 +132,47 @@ class OrderTests(APITestCase):
         url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
         response = self.client.patch(url, {"status": "completed", "price": 1}, format="json")
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_delete_order_as_staff(self):
+        staff_user = CoderrUser.objects.create_user(
+            username="StaffUser", password="test123", type="business", is_staff=True
+        )
+        response = self.client.post(
+            reverse("orders"), {"offer_detail_id": self.offer_detail_id}, format="json"
+        )
+        self.client.force_authenticate(user=staff_user)
+        url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
+        self.assertEqual(Order.objects.count(), 0)
+
+    def test_delete_order_as_business_user(self):
+        response = self.client.post(
+            reverse("orders"), {"offer_detail_id": self.offer_detail_id}, format="json"
+        )
+        self.client.force_authenticate(user=self.business_user)
+        url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        response = self.client.delete(url)
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+        self.assertEqual(Order.objects.count(), 1)
+
+    def test_order_counts(self):
+        response = self.client.post(
+            reverse("orders"), {"offer_detail_id": self.offer_detail_id}, format="json"
+        )
+        count_url = reverse("order-count", kwargs={"business_user_id": self.business_user.id})
+        completed_url = reverse(
+            "completed-order-count", kwargs={"business_user_id": self.business_user.id}
+        )
+        self.assertEqual(self.client.get(count_url).data["order_count"], 1)
+
+        self.client.force_authenticate(user=self.business_user)
+        detail_url = reverse("orders-detail", kwargs={"pk": response.data["id"]})
+        self.client.patch(detail_url, {"status": "completed"}, format="json")
+        self.assertEqual(self.client.get(count_url).data["order_count"], 0)
+        self.assertEqual(self.client.get(completed_url).data["completed_order_count"], 1)
+
+    def test_order_count_for_non_business_user(self):
+        url = reverse("order-count", kwargs={"business_user_id": self.customer_user.id})
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
