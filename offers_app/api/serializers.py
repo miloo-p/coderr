@@ -38,6 +38,20 @@ class OfferDetailLinkSerializer(serializers.ModelSerializer):
         ]
 
 
+class OfferDetailListLinkSerializer(OfferDetailLinkSerializer):
+    """
+    Serializes the details key in the offer list with a relative url.
+    """
+
+    url = serializers.SerializerMethodField()
+
+    def get_url(self, obj):
+        """
+        Returns the relative url of the offer detail.
+        """
+        return f"/offerdetails/{obj.id}/"
+
+
 class OfferUserDetailSerializer(serializers.ModelSerializer):
     """
     Serializes the user_details key of an offer.
@@ -151,6 +165,7 @@ class OfferListSerializer(OfferRetrieveSerializer):
     Serializes an offer-list.
     """
 
+    details = OfferDetailListLinkSerializer(many=True, read_only=True)
     user_details = OfferUserDetailSerializer(read_only=True, source="user")
 
     class Meta(OfferRetrieveSerializer.Meta):

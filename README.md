@@ -98,7 +98,8 @@ python manage.py test
 - `average_rating` in `/api/base-info/` is `0` as long as there are no reviews.
 - A second review of the same business user by the same customer returns `400 Bad Request`
   (the documentation names both 400 and 403).
-- The `url` of offer details is an absolute URL in the offer list and in the single offer.
+- The `url` of offer details is relative in the offer list (`/offerdetails/1/`) and absolute in the single offer
+  (`http://127.0.0.1:8000/api/offerdetails/1/`), as the API documentation shows it.
 - Images (`file` in profiles, `image` in offers) are uploaded as `multipart/form-data`.
 - Uploaded files are stored in `media/`, which is not part of the repository.
 

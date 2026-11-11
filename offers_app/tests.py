@@ -141,6 +141,16 @@ class OfferTests(APITestCase):
         self.assertEqual(len(response.data["details"]), 3)
         self.assertEqual(set(response.data["details"][0].keys()), {"id", "url"})
 
+    def test_detail_urls_relative_in_list_absolute_in_single_offer(self):
+        created = self.client.post("/api/offers/", self.data, format="json")
+        detail_id = created.data["details"][0]["id"]
+        list_response = self.client.get("/api/offers/")
+        self.assertEqual(list_response.data["results"][0]["details"][0]["url"], f"/offerdetails/{detail_id}/")
+        single_response = self.client.get(reverse("offer-detail", kwargs={"pk": created.data["id"]}))
+        self.assertEqual(
+            single_response.data["details"][0]["url"], f"http://testserver/api/offerdetails/{detail_id}/"
+        )
+
     def test_get_a_single_offer_details(self):
         created = self.client.post("/api/offers/", self.data, format="json")
         url = reverse("offerdetail-infos", kwargs={"pk": created.data["details"][0]["id"]})
