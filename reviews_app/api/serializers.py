@@ -22,11 +22,17 @@ class ReviewSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "reviewer", "created_at", "updated_at"]
 
     def validate_business_user(self, value):
+        """
+        Allows reviews only for business users.
+        """
         if value.type != "business":
             raise serializers.ValidationError("Reviews can only be written for business users.")
         return value
 
     def validate(self, attrs):
+        """
+        Allows only one review per customer and business user.
+        """
         if self.instance is None:
             reviewer = self.context["request"].user
             if Review.objects.filter(
@@ -58,6 +64,9 @@ class ReviewUpdateSerializer(serializers.ModelSerializer):
         fields = ["rating", "description"]
 
     def validate(self, attrs):
+        """
+        Rejects every field except rating and description.
+        """
         extra_fields = set(self.initial_data) - {"rating", "description"}
         if extra_fields:
             raise serializers.ValidationError(

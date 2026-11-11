@@ -61,6 +61,10 @@ class CustomLoginView(ObtainAuthToken):
 
 
 class ProfileDetailView(APIView):
+    """
+    Lets users read profiles and update their own one.
+    """
+
     permission_classes = [IsAuthenticated, IsOwnerOfProfile]
 
     def get(self, request, pk):
@@ -85,6 +89,10 @@ class ProfileDetailView(APIView):
 
 
 class ProfilesListView(APIView):
+    """
+    Base view for profile lists, filtered by profile_type.
+    """
+
     permission_classes = [IsAuthenticated]
 
     def get(self, request):
@@ -97,10 +105,18 @@ class ProfilesListView(APIView):
 
 
 class BusinessProfilesListView(ProfilesListView):
+    """
+    Lists all business profiles.
+    """
+
     profile_type = "business"
     serializer_class = BusinessProfileSerializer
 
 
 class CustomerProfilesListView(ProfilesListView):
+    """
+    Lists all customer profiles.
+    """
+
     profile_type = "customer"
     serializer_class = CustomerProfileSerializer

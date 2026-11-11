@@ -3,6 +3,10 @@ from django.db import models
 
 
 class CoderrUser(AbstractUser):
+    """
+    User of Coderr, either a customer or a business user.
+    """
+
     TYPE_CHOICES = [
         ("customer", "customer"),
         ("business", "business"),

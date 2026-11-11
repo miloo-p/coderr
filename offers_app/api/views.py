@@ -19,11 +19,18 @@ from .serializers import (
 
 
 class OfferPagination(PageNumberPagination):
+    """
+    Paginates the offer list, the frontend can change the size with page_size.
+    """
+
     page_size = 6
     page_size_query_param = "page_size"
 
 
 def get_offers_with_min_values():
+    """
+    Returns all offers with the lowest price and delivery time of their details.
+    """
     return Offer.objects.annotate(
         min_price=Min("details__price"), min_delivery_time=Min("details__delivery_time_in_days")
     )
@@ -76,6 +83,10 @@ class OfferView(APIView):
 
 
 class OfferRetrieveView(APIView):
+    """
+    Lets users read an offer and its creator update or delete it.
+    """
+
     permission_classes = [IsAuthenticated, IsCreatorOfOffer]
 
     def get(self, request, pk):
@@ -109,6 +120,10 @@ class OfferRetrieveView(APIView):
 
 
 class OfferDetailRetrieveView(APIView):
+    """
+    Returns a single offer package.
+    """
+
     def get(self, request, pk):
         """
         Returns infos for a single OfferDetail.

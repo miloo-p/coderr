@@ -70,6 +70,9 @@ class OfferSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        """
+        Creates the offer together with its three details.
+        """
         details = validated_data.pop("details")
         offer = Offer.objects.create(**validated_data)
         for detail in details:
@@ -78,12 +81,18 @@ class OfferSerializer(serializers.ModelSerializer):
         return offer
 
     def update(self, instance, validated_data):
+        """
+        Updates the offer and the sent details, matched by offer_type so their IDs stay.
+        """
         details = validated_data.pop("details", [])
         for detail in details:
             instance.details.filter(offer_type=detail["offer_type"]).update(**detail)
         return super().update(instance, validated_data)
 
     def validate_details(self, value):
+        """
+        Requires all three types on create and an offer_type for every detail on update.
+        """
         if not self.partial:
             offer_types = {detail["offer_type"] for detail in value}
             if len(value) != 3 or offer_types != {"basic", "standard", "premium"}:

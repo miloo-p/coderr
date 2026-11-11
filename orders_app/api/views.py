@@ -38,6 +38,10 @@ class OrderView(APIView):
 
 
 class OrderDetailView(APIView):
+    """
+    Lets the business user update the status and staff delete an order.
+    """
+
     permission_classes = [IsAuthenticated, IsCreatorOfOrder]
 
     def patch(self, request, pk):

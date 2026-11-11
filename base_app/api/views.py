@@ -16,6 +16,9 @@ class BaseInfoView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        """
+        Returns review count, average rating, business profile count and offer count.
+        """
         average_rating = Review.objects.aggregate(average=Avg("rating"))["average"] or 0
         return Response(
             {

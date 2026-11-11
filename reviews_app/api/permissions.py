@@ -7,4 +7,7 @@ class IsReviewer(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        """
+        Only the reviewer may change or delete the review.
+        """
         return obj.reviewer == request.user

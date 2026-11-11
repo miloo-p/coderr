@@ -46,6 +46,9 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
 
     def create(self, validated_data):
+        """
+        Creates the order with a copy of the values of the chosen offer detail.
+        """
         offer_detail_id = validated_data.pop("offer_detail_id")
         offer_detail = get_object_or_404(OfferDetail, pk=offer_detail_id)
         order = Order.objects.create(
@@ -73,6 +76,9 @@ class OrderStatusSerializer(serializers.ModelSerializer):
         ]
 
     def validate(self, attrs):
+        """
+        Rejects every field except status.
+        """
         extra_fields = set(self.initial_data) - {"status"}
         if extra_fields:
             raise serializers.ValidationError(

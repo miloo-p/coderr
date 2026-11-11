@@ -7,6 +7,9 @@ class IsBusinessOrReadOnly(BasePermission):
     """
 
     def has_permission(self, request, view):
+        """
+        Everyone may read, only business users may create.
+        """
         if request.method in SAFE_METHODS:
             return True
         return request.user.is_authenticated and request.user.type == "business"
@@ -18,6 +21,9 @@ class IsCreatorOfOffer(BasePermission):
     """
 
     def has_object_permission(self, request, view, obj):
+        """
+        Everyone may read, only the creator may change or delete.
+        """
         if request.method in SAFE_METHODS:
             return True
         return obj.user == request.user

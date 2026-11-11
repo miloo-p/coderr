@@ -85,6 +85,10 @@ class ProfileSerializer(serializers.ModelSerializer):
 
 
 class BusinessProfileSerializer(ProfileSerializer):
+    """
+    Serializes a business profile for the business list.
+    """
+
     class Meta(ProfileSerializer.Meta):
         fields = [
             "user",
@@ -101,6 +105,10 @@ class BusinessProfileSerializer(ProfileSerializer):
 
 
 class CustomerProfileSerializer(ProfileSerializer):
+    """
+    Serializes a customer profile for the customer list.
+    """
+
     uploaded_at = serializers.DateTimeField(read_only=True, source="created_at")
 
     class Meta(ProfileSerializer.Meta):
